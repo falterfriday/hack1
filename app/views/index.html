@@ -1,0 +1,99 @@
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<link rel="stylesheet" href="/static/css/styles.css" type="text/css">
+	<script>
+		function initMap() {
+			var map = new google.maps.Map(document.getElementById('map'), {
+				center: {lat: 38.9072, lng: -77.0369},
+				zoom: 14
+			});
+			var infoWindow = new google.maps.InfoWindow({map: map});
+
+	        // Try HTML5 geolocation.
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(function(position) {
+					var pos = {
+					lat: position.coords.latitude,
+					lng: position.coords.longitude
+					};
+					user_pos = pos
+					infoWindow.setPosition(pos);
+					infoWindow.setContent('You are here.');
+					map.setCenter(pos);
+				}, function() {
+					handleLocationError(true, infoWindow, map.getCenter());
+				});
+			} 
+			else {
+				handleLocationError(false, infoWindow, map.getCenter());
+			}
+		}
+
+		$(document).ready(function(){  
+			user_pos = {}         	
+			navigator.geolocation.getCurrentPosition(function(position) {
+				user_pos = {
+					lat: position.coords.latitude,
+					lng: position.coords.longitude
+				};
+			$('#lng').val(user_pos.lng)
+			$('#lat').val(user_pos.lat)
+			}) 
+        $('#place_search').submit(function(){
+            $.post($(this).attr('action'), $(this).serialize(), function(data){
+                console.log(data);
+                // we need to clear out list before resubmitting //
+                $('#list').empty();
+                
+                for(var i = 0; i < data.results.length; i++){
+                    $('#list').append('<input type="checkbox" name="stop[i]">'+data.results[i].name+'</input>')
+                    if (data.results[i].opening_hours.open_now){
+                        $('#list').append('<p>Open Now</p>')
+                    }
+                    else{
+                        $('#list').append('<p>Closed</p>')
+                    }
+                    if (data.results[i].rating){
+                        $('#list').append('<p>Rating:'+data.results[i].rating+'</p><hr>')
+                    }
+                    else{
+                        $('#list').append('<p>No Rating</p><hr>')
+                    }    
+                }
+            }, 'json');
+        return false
+    		});
+		});
+    </script>
+    <script async defer
+	    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBu-IB2jOzZ-0cWuqkMrd5KnecOfTJz6vs&callback=initMap">
+	</script>
+
+</head>
+<body>
+	<div class="input">
+		<form action='/place_search' id='place_search' method="post">
+			Activity:<br>
+			<select>
+				<option></option>			
+				<option>Pub Crawl</option>
+				<option>Brewery Crawl</option>
+				<option>Coffee Crawl</option>			
+			</select><br>
+			When:<br><input type="date" name="when"><br><br>
+			<input type="text" name="lng" id="lng">
+			<input type="text" name="lat" id="lat">
+			<input type="text" name="what" id="what">
+			<input type="submit" name="submit" value="Go!">
+
+		</form>
+	</div>
+	<form id="list">
+	</form>
+	<div id="map"></div>
+
+</body>
+</html>
