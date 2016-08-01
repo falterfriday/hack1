@@ -15,13 +15,10 @@ class Blanks(Controller):
 		return self.load_view('index.html')
 
 	def place_search(self):
-		print "GOT HERE"
 		lng = request.form['lng']
 		lat = request.form['lat']
-		
 		what = request.form['what']
 		url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+lat+","+lng+"&radius=10000&keyword="+what+"&key=AIzaSyBLgLT2H_qbHsAKH6L6Da_aLyz-aRGG34U"
-		print url
 		response = requests.get(url).content
 		return response
 
